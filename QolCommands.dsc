@@ -109,3 +109,40 @@ HC_list_custommodeldata_menu:
         - [] [] [] [] [] [] [] [] []
         - [] [] [] [] [] [] [] [] []
         - [] [] [] [] [] [] [] [] []
+
+
+
+HC_check_skills:
+    type: command
+    debug: false
+    usage: /skills
+    name: skills
+    description: Shows all Skills of the chosen user
+    tab complete:
+        - if <player.is_op>:
+            - define list Set|Show
+            - if <context.args.get[1].if_null[]> == show:
+                - define list:!
+                - foreach <server.players>:
+                    - define item <[value].name>
+                    - define list:->:<[item]>
+            - define player <server.match_player[<context.args.get[1].if_null[]>].if_null[<player>]>
+            - if <context.args.get[1].if_null[]> == set:
+                - define list:!
+                - foreach <[player].flag[skills]>:
+                    - define list:->:<[key]>
+        - determine <[list].if_null[]>
+    script:
+        - if <context.args.get[1].if_null[show]> == show:
+            - define player <server.match_player[<context.args.get[2].if_null[]>].if_null[<player>].if_null[<player>]>
+            - if !<player.is_op>:
+                - define player <player>
+            - narrate "                              "
+            - narrate "<green><[player].name>'s <reset>Skills:"
+            - narrate ============================
+            - foreach <[player].flag[skills].if_null[]>:
+                - narrate "     <green><[key]><reset>: <[value].get[lvl].if_null[0]>"
+                - narrate "          <green>XP<reset>: <[value].get[xp].if_null[0]>"
+                - narrate "                              "
+        - if <context.args.get[1].if_null[show]> == set and <player.is_op> and <context.args.get[2].if_null[null]> != null:
+            - flag <player> Skills.<context.args.get[2]>.lvl:<context.args.get[3].if_null[1]>
