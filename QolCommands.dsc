@@ -129,7 +129,7 @@ HC_check_skills:
             - define player <server.match_player[<context.args.get[1].if_null[]>].if_null[<player>]>
             - if <context.args.get[1].if_null[]> == set:
                 - define list:!
-                - foreach <[player].flag[skills]>:
+                - foreach <[player].flag[skills].if_null[crafting]>:
                     - define list:->:<[key]>
         - determine <[list].if_null[]>
     script:
