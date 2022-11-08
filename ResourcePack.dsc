@@ -39,13 +39,22 @@ resource_update_manual:
     script:
 
         #Config
-        - define PackSavePath plugins/Denizen/data/ResourcePack.zip
+        - define PackSavePath data/ResourcePack.zip
 
         #Verify input
-        - if <context.args.get[1].if_null[null]> != null and <context.args.get[1].contains_text[.zip]>:
+        - if !<context.args.contains_text[.zip]>:
+            - narrate "<green>Using cached URL"
+            - define url <yaml[ResourcePack].read[ResourcePack.URL]>
+        - else:
+            - foreach <context.args>:
+                - if <[value].contains_text[.zip]>:
+                    - define url <[value]>
+        - if <[url].if_null[null]> != null and <[url].contains_text[.zip]>:
 
             #Start Download
-            - ~webget <context.args.get[1]> savefile:<[PackSavePath]> save:result hide_failure
+            #- if <util.has_file[<[PackSavePath]>]>:
+                #- adjust server delete_file:<[PackSavePath]>
+            - ~webget <[url]> savefile:plugins/Denizen/<[PackSavePath]> save:result hide_failure
 
 
             #Print failure
@@ -53,32 +62,24 @@ resource_update_manual:
                 - narrate "<red>Download failed <red><n><white><entry[result].status.if_null[No response from remote server]>"
                 - stop
 
-            #Decompress locally
-
-            - if <context.args.get[3].if_null[null]> == decompress:
-                - narrate W.I.P
-
 
             #Hash file
             - ~fileread path:<[PackSavePath]> save:File
-            - define Hash <entry[File].hash[SHA-1].if_null[null]>
+            - define Hash <entry[File].data.hash[SHA-1].if_null[null].replace_text[binary@]>
             - if <[Hash]> == null:
                 - narrate "<red>Unable to read file for hashing. Random hash will be generated, this will not be the file hash."
-                - define Hash <util.random_uuid.base64_encode.base64_to_binary.hash[SHA-1].replace_text[binary@].if_null[null]>
+                - define Hash <util.random_uuid.base64_encode.base64_to_binary.hash[sha-1].to_hex.replace_text[binary@].if_null[null]>
             - narrate "<green>Pack updated:<n><reset> <green>Hash: <white><[Hash]>"
 
             #Save Details to YAML
             - ~yaml create id:ResourcePack
             - ~yaml load:configs/ResourcePack.yml id:ResourcePack
             - ~yaml set id:ResourcePack ResourcePack.Hash:<[Hash]>
-            - ~yaml set id:ResourcePack ResourcePack.URL:<context.args.get[1]>
+            - ~yaml set id:ResourcePack ResourcePack.URL:<[url]>
             - ~yaml savefile:configs/ResourcePack.yml id:ResourcePack
 
             #Announce to server
-            - if <context.args.get[2].if_null[null]> == announce:
+            - if <context.args.contains_text[announce]>:
                 - clickable save:OnClickCommand until:45s usages:1:
                     - ~run resource_reload instantly
                 - narrate targets:<server.online_players> "<green>The Resource Pack has been updated, please run <white><element[/ResourceReload].on_click[<entry[OnClickCommand].command>]><reset> <green> to download and use the new pack."
-
-        - else:
-            - narrate "<red>That is not a valid direct link"
