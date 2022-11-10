@@ -45,6 +45,8 @@ resource_update_manual:
         - if !<context.args.contains_text[.zip]>:
             - narrate "<green>Using cached URL"
             - define url <yaml[ResourcePack].read[ResourcePack.URL]>
+            - ~fileread path:<[PackSavePath]> save:OldFile
+            - define OldHash <entry[OldFile].data.hash[SHA-1].if_null[null].replace_text[binary@]>
         - else:
             - foreach <context.args>:
                 - if <[value].contains_text[.zip]>:
@@ -70,6 +72,8 @@ resource_update_manual:
                 - narrate "<red>Unable to read file for hashing. Random hash will be generated, this will not be the file hash."
                 - define Hash <util.random_uuid.base64_encode.base64_to_binary.hash[sha-1].to_hex.replace_text[binary@].if_null[null]>
             - narrate "<green>Pack updated:<n><reset> <green>Hash: <white><[Hash]>"
+            - if <[OldHash]> == <[Hash]>:
+                - narrate " <green>Hash Match:<white> No change"
 
             #Save Details to YAML
             - ~yaml create id:ResourcePack
