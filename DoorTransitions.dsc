@@ -29,7 +29,7 @@ cutscene_screeneffect:
       - define color <black>
     - define title <script[cutscene_screeneffect].data_key[config].get[cutscene_transition_unicode]||null>
     - if <[title]> == null:
-      - debug error "Could not find screeneffect unicode in cutscene_screeneffect"
+      - narrate targets:<[player]> "Could not find screeneffect unicode in cutscene_screeneffect"
       - stop
     - title title:<&color[<[color]>]||<black>><[title]> fade_in:<duration[<[fade_in]>]> stay:<duration[<[stay]>]> fade_out:<duration[<[fade_out]>]> targets:<[player]>
 
