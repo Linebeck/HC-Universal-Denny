@@ -6,7 +6,7 @@ door_transitions:
                         - if <context.block.material.name> == iron_door or <player.item_in_hand.script.name.if_null[]> == door_link_tool:
                                 - stop
                         - if <context.location.block.has_flag[transitions]> and <player.item_in_hand.script.name.if_null[null]> != door_transitions_tool:
-                                - run dcutscene_screeneffect def.player:<player> def.fade_in:0.5s def.stay:1s def.fade_out:0.5s def.color:<black>
+                                - run cutscene_screeneffect def.player:<player> def.fade_in:0.5s def.stay:1s def.fade_out:0.5s def.color:<black>
                                 - wait 10t
                                 - switch <context.location>
                                 - teleport <player> <context.location.block.flag[transitions]>
@@ -17,6 +17,21 @@ door_transitions:
 
 #Door tool
 
+
+cutscene_screeneffect:
+    type: task
+    debug: false
+    config:
+        cutscene_transition_unicode: \ue813
+    definitions: player|fade_in|stay|fade_out|color
+    script:
+    - if <&color[<[color]>]||null> == null:
+      - define color <black>
+    - define title <script[cutscene_screeneffect].data_key[config].get[cutscene_transition_unicode]||null>
+    - if <[title]> == null:
+      - debug error "Could not find screeneffect unicode in cutscene_screeneffect"
+      - stop
+    - title title:<&color[<[color]>]||<black>><[title]> fade_in:<duration[<[fade_in]>]> stay:<duration[<[stay]>]> fade_out:<duration[<[fade_out]>]> targets:<[player]>
 
 
 door_link_tool:
